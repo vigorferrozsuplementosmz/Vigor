@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIGOR FERROZ | Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0b0f12; color: white; scroll-behavior: smooth; font-family: sans-serif; }
+        .neon-text { color: #39ff14; text-shadow: 0 0 10px #39ff14; }
+        .admin-hidden { display: none !important; }
+        .bg-card { background-color: #161b22; }
+        .input-dark { background-color: #0d1117; border: 1px solid #30363d; color: white; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+        .blink-red { color: #ff4444; animation: blink 1s infinite; font-weight: bold; }
+        .status-confirmado { background-color: #22c55e; color: white; } 
+        .status-pendente { background-color: #eab308; color: black; }   
+        .status-cancelado { background-color: #ef4444; color: white; }  
+    </style>
+</head>
+<body>
+    <!-- INTERFACE CLIENTE -->
+    <div id="client-site">
+        <header class="py-10 text-center border-b border-gray-800">
+            <h1 class="text-5xl font-black neon-text uppercase tracking-tighter">VIGOR FERROZ</h1>
+            <p class="text-gray-400 mt-2 font-medium italic">Resultados em apenas 14 dias!</p>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4">
+            <div class="text-center mb-8">
+                <img id="fotoProduto" src="https://via.placeholder.com/300?text=Vigor+Ferroz" class="mx-auto rounded-2xl border-2 border-[#39ff14] shadow-lg max-w-[280px]">
+            </div>
+
+            <section class="bg-card p-8 rounded-3xl border border-gray-800 shadow-2xl mb-8 text-center">
+                <h2 class="text-3xl font-bold text-[#39ff14] mb-2 uppercase italic">Fazer Encomenda</h2>
+                <p class="blink-red mb-6 uppercase text-sm">⚠️ ATENÇÃO: APENAS <span id="urgenciaStock">--</span> UNIDADES RESTANTES!</p>
+                
+                <form id="orderForm" autocomplete="off" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                    <input type="text" id="nome" placeholder="Nome Completo" class="w-full p-4 input-dark rounded-xl outline-none" required>
+                    <input type="number" id="contacto" placeholder="Contacto (8X)" class="w-full p-4 input-dark rounded-xl outline-none" required>
+                    <select id="provincia" class="w-full p-4 input-dark rounded-xl outline-none" required>
+                        <option value="">Selecione a Província...</option>
+                        <option>Maputo Cidade</option><option>Maputo Província</option><option>Gaza</option>
+                        <option>Inhambane</option><option>Sofala</option><option>Manica</option>
+                        <option>Tete</option><option>Zambézia</option><option>Nampula</option>
+                        <option>Niassa</option><option>Cabo Delgado</option>
+                    </select>
+                    <input type="text" id="bairro" placeholder="Nome do Bairro" class="w-full p-4 input-dark rounded-xl outline-none" required>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs text-gray-400 mb-1 ml-2 uppercase font-bold">Horário de Entrega (07h às 18h):</label>
+                        <select id="horario" class="w-full p-4 input-dark rounded-xl outline-none" required>
+                            <option value="">Escolha o horário...</option>
+                            <option>07:00 - 10:00</option><option>10:00 - 13:00</option>
+                            <option>13:00 - 15:00</option><option>15:00 - 18:00</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 text-center py-6">
+                        <div class="text-6xl font-black neon-text mb-2"><span id="precoExibicao">---</span>MT</div>
+                        <button type="submit" id="btnSubmit" class="w-full bg-[#39ff14] text-black font-black py-6 rounded-2xl text-2xl uppercase hover:scale-105 transition">CONFIRMAR PEDIDO AGORA</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+        <footer class="text-center p-10"><button onclick="showAdmin()" class="text-gray-900 hover:text-[#39ff14] text-[10px] uppercase italic">Painel Admin</button></footer>
+    </div>
+
+    <!-- ÁREA ADMINISTRATIVA -->
+    <div id="admin-area" class="admin-hidden p-4 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-[#39ff14] uppercase italic">📊 Gestão de Vigor Ferroz</h2>
+                <button onclick="hideAdmin()" class="bg-red-600 px-4 py-2 rounded-lg font-bold">Sair</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <!-- Stock e Preço -->
+                <div class="bg-card p-4 rounded-xl border border-gray-700">
+                    <label class="text-[10px] uppercase text-gray-400">Stock & Preço</label>
+                    <input type="number" id="admStock" placeholder="Qtd Stock" class="w-full p-2 mb-2 input-dark rounded text-sm">
+                    <input type="number" id="admPreco" placeholder="Preço (MT)" class="w-full p-2 mb-2 input-dark rounded text-sm">
+                    <button onclick="salvarConfig()" class="w-full bg-[#39ff14] text-black py-2 rounded font-bold text-xs uppercase">Salvar Dados</button>
+                </div>
+                <!-- Imagem -->
+                <div class="bg-card p-4 rounded-xl border border-gray-700">
+                    <label class="text-[10px] uppercase text-gray-400">Link da Foto do Produto</label>
+                    <input type="text" id="admImg" placeholder="URL da Imagem" class="w-full p-2 mb-2 input-dark rounded text-sm">
+                    <button onclick="salvarImg()" class="w-full bg-blue-600 text-white py-2 rounded font-bold text-xs uppercase">Mudar Foto</button>
+                </div>
+                <!-- Faturamento Real -->
+                <div class="bg-card p-4 rounded-xl border border-gray-700">
+                    <label class="text-[10px] uppercase text-gray-400">Faturamento Bruto (Confirmados)</label>
+                    <p class="text-2xl font-black text-[#39ff14] mt-2" id="totalReceita">0 MT</p>
+                    <button onclick="limparVendas()" class="mt-4 text-[9px] text-red-500 underline uppercase font-bold">Limpar Registos Semanais</button>
+                </div>
+                <!-- Gráfico de Vendas Semanais -->
+                <div class="bg-card p-2 rounded-xl border border-gray-700">
+                    <canvas id="vendasChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl overflow-hidden shadow-2xl overflow-x-auto text-black">
+                <table class="w-full text-left min-w-[900px]">
+                    <thead class="bg-gray-200 text-[10px] uppercase">
+                        <tr>
+                            <th class="p-4">Cliente / Contacto</th>
+                            <th class="p-4">Local / Horário</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4">Justificativa</th>
+                            <th class="p-4 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTable" class="text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBNopVEwgMdmnZDELAdSIAoLOW4tLEyZ8",
+            databaseURL: "https://vigorferroz-default-rtdb.firebaseio.com",
+            projectId: "vigorferroz",
+            appId: "1:263350995456:web:a1b3e080a6bf0de9dc26e5"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Configuração Inicial e Real-time
+        db.ref('configuracao').on('value', snap => {
+            const c = snap.val();
+            if(c) {
+                document.getElementById('urgenciaStock').innerText = c.stock || 0;
+                document.getElementById('precoExibicao').innerText = c.preco || 0;
+                document.getElementById('fotoProduto').src = c.imagem || "https://via.placeholder.com/300";
+                
+                if(!document.getElementById('admPreco').value) document.getElementById('admPreco').value = c.preco;
+                if(!document.getElementById('admStock').value) document.getElementById('admStock').value = c.stock;
+                if(!document.getElementById('admImg').value) document.getElementById('admImg').value = c.imagem;
+            }
+        });
+
+        async function salvarConfig() {
+            const s = document.getElementById('admStock').value;
+            const p = document.getElementById('admPreco').value;
+            await db.ref('configuracao').update({ stock: parseInt(s), preco: parseInt(p) });
+            alert("Stock e Preço atualizados!");
+        }
+
+        async function salvarImg() {
+            const url = document.getElementById('admImg').value;
+            await db.ref('configuracao').update({ imagem: url });
+            alert("Imagem atualizada!");
+        }
+
+        // Submissão do Pedido pelo Cliente
+        document.getElementById('orderForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true; btn.innerText = "A PROCESSAR...";
+            
+            const agora = new Date();
+            const pedido = {
+                nome: document.getElementById('nome').value,
+                contacto: document.getElementById('contacto').value,
+                local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
+                horario: document.getElementById('horario').value,
+                status: "Pendente",
+                justificativa: "",
+                data: Date.now(),
+                diaSemana: agora.getDay(), // 0 (Dom) a 6 (Sáb)
+                timestamp: 0 - Date.now() // Necessário para ordenar descendente no Firebase
+            };
+
+            try {
+                await db.ref('pedidos').push(pedido);
+                db.ref('configuracao/stock').transaction(c => (c || 0) - 1);
+                alert("PEDIDO EFECTUADO COM SUCESSO!");
+                this.reset();
+            } catch (error) { alert("Erro ao conectar."); }
+            btn.disabled = false; btn.innerText = "CONFIRMAR PEDIDO AGORA";
+        };
+
+        // Gestão Administrativa
+        let windowChart = null;
+
+        function carregarPedidos() {
+            // orderByChild('timestamp') garante que o mais recente (valor mais negativo) apareça primeiro
+            db.ref('pedidos').orderByChild('timestamp').on('value', (snapshot) => {
+                const table = document.getElementById('adminTable');
+                table.innerHTML = "";
+                let faturamento = 0;
+                let contagemSemanal = [0, 0, 0, 0, 0, 0, 0];
+                const precoUnitario = parseInt(document.getElementById('precoExibicao').innerText) || 0;
+
+                snapshot.forEach((child) => {
+                    const p = child.val();
+                    const id = child.key;
+                    
+                    // Cálculo de faturamento e gráfico APENAS para confirmados
+                    if(p.status === "Confirmado") {
+                        faturamento += precoUnitario;
+                        if(p.diaSemana !== undefined) {
+                            contagemSemanal[p.diaSemana]++;
+                        }
+                    }
+
+                    let sClass = p.status === "Confirmado" ? "status-confirmado" : (p.status === "Cancelado" ? "status-cancelado" : "status-pendente");
+                    const textoCopia = `CLIENTE: ${p.nome} | TEL: ${p.contacto} | LOCAL: ${p.local} | HORA: ${p.horario}`;
+
+                    table.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-4"><b class="uppercase text-xs">${p.nome}</b><br><span class="text-blue-600 font-bold">${p.contacto}</span></td>
+                            <td class="p-4 text-[10px] leading-tight text-gray-600">${p.local}<br><b class="text-orange-600">⏰ ${p.horario}</b></td>
+                            <td class="p-4"><button onclick="mudarStatus('${id}','${p.status}')" class="${sClass} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">${p.status}</button></td>
+                            <td class="p-4"><input type="text" onchange="salvarJust('${id}', this.value)" value="${p.justificativa || ''}" placeholder="Justificativa..." class="border-b border-gray-100 text-[10px] w-full outline-none focus:border-neon"></td>
+                            <td class="p-4 text-center">
+                                <button onclick="navigator.clipboard.writeText('${textoCopia}'); alert('Copiado!')" class="text-gray-400 hover:text-blue-500 mx-2"><i class="fas fa-copy"></i></button>
+                                <button onclick="apagar('${id}')" class="text-red-200 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+                
+                document.getElementById('totalReceita').innerText = faturamento.toLocaleString() + " MT";
+                desenharGrafico(contagemSemanal);
+            });
+        }
+
+        function desenharGrafico(dados) {
+            const ctx = document.getElementById('vendasChart').getContext('2d');
+            if(windowChart) windowChart.destroy();
+            windowChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+                    datasets: [{
+                        label: 'Vendas Confirmadas',
+                        data: dados,
+                        backgroundColor: '#39ff14',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, display: false },
+                        x: { ticks: { color: '#888', font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function mudarStatus(id, s) {
+            let n = s === "Pendente" ? "Confirmado" : (s === "Confirmado" ? "Cancelado" : "Pendente");
+            await db.ref('pedidos/'+id).update({status: n});
+        }
+
+        async function salvarJust(id, t) { await db.ref('pedidos/'+id).update({justificativa: t}); }
+
+        async function apagar(id) { if(confirm("Eliminar este registo?")) await db.ref('pedidos/'+id).remove(); }
+        
+        async function limparVendas() {
+            if(confirm("ATENÇÃO: Deseja apagar todos os pedidos da base de dados para iniciar uma nova semana?")) {
+                await db.ref('pedidos').remove();
+                alert("Base de dados limpa!");
+            }
+        }
+
+        function showAdmin() {
+            if(prompt("Chave Mestra:") === "Lasanha") {
+                document.getElementById('client-site').classList.add('admin-hidden');
+                document.getElementById('admin-area').classList.remove('admin-hidden');
+                carregarPedidos();
+            }
+        }
+
+        function hideAdmin() {
+            document.getElementById('client-site').classList.remove('admin-hidden');
+            document.getElementById('admin-area').classList.add('admin-hidden');
+        }
+    </script>
+</body>
+</html>
