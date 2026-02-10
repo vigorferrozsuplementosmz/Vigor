@@ -3,160 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="site-title-tag">VIGOR FERROZ | Master Suite</title>
+    <title id="page-title">VIGOR FERROZ | Oficial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #fff; color: #222; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        #admin-area { display: none; background-color: #020617; color: white; min-height: 100vh; position: relative; z-index: 1000; }
+        body { background-color: #fdfdfd; font-family: 'Inter', sans-serif; }
+        .status-pendente { background: #f1c40f !important; color: #000; }
+        .status-confirmado { background: #2ecc71 !important; color: #fff; }
+        .status-entregue { background: #3498db !important; color: #fff; }
+        .status-cancelado { background: #e74c3c !important; color: #fff; }
         
-        .status-pendente { background-color: #facc15 !important; color: #000 !important; }
-        .status-confirmado { background-color: #22c55e !important; color: #fff !important; }
-        .status-entregue { background-color: #3b82f6 !important; color: #fff !important; }
-        .status-cancelado { background-color: #ef4444 !important; color: #fff !important; }
-
         #social-notify {
-            position: fixed; bottom: 20px; left: 20px; background: rgba(0, 0, 0, 0.9); 
-            color: white; padding: 12px 20px; border-radius: 15px; font-size: 12px; 
-            border-left: 4px solid #39ff14; transition: 0.5s; z-index: 9999;
-            transform: translateX(-150%);
+            position: fixed; bottom: 20px; left: 15px; right: 15px; 
+            background: #000; color: #fff; padding: 15px; border-radius: 15px;
+            border-left: 5px solid #2ecc71; transform: translateY(200%);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999;
         }
-        #social-notify.active { transform: translateX(0); }
-
-        .client-input { width: 100%; padding: 15px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 12px; font-size: 16px; }
-        .btn-compra { background: #28a745; color: #fff; width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; box-shadow: 0 5px 0 #1e7e34; }
-        .tab-active { border-bottom: 3px solid #39ff14; color: #39ff14; }
-        .bg-card-admin { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 24px; }
+        #social-notify.active { transform: translateY(0); }
+        
+        .client-input { width: 100%; padding: 18px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; }
+        #admin-area { display: none; background: #0f172a; min-height: 100vh; color: #fff; z-index: 10000; position: absolute; top: 0; width: 100%; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .active-tab-btn { border-bottom: 3px solid #39ff14; color: #39ff14; }
+        .benefit-item { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #166534; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="social-notify">
-        <b id="social-name">António</b>
-        <div class="text-[10px] opacity-70">Encomendeu às <span id="social-time">--:--</span></div>
+        <div class="flex items-center gap-3">
+            <i class="fas fa-shopping-cart text-green-400"></i>
+            <div>
+                <b id="s-name">António</b>
+                <span class="block text-[10px] opacity-70">Encomendou agora às <span id="s-time">--:--</span></span>
+            </div>
+        </div>
     </div>
 
     <div id="client-site">
-        <div class="bg-[#e60000] text-white text-center py-2 text-[11px] font-bold sticky top-0 z-50">
-            <span onclick="showAdmin()" style="cursor:pointer">⚠️</span> 
-            RESTAM APENAS <span id="urgenciaStock">--</span> UNIDADES
+        <div class="bg-red-600 text-white text-center py-2 text-[11px] font-bold sticky top-0 z-50">
+            <span onclick="openAdmin()" style="cursor:pointer">⚠️</span> 
+            RESTAM <span id="viewStock">--</span> UNIDADES EM STOCK
         </div>
 
-        <div class="max-w-[480px] mx-auto p-5">
-            <h1 id="site-main-name" class="text-center italic font-black text-3xl text-[#28a745] mb-4 uppercase">VIGOR FERROZ</h1>
+        <div class="max-w-[480px] mx-auto p-4">
+            <h1 id="site-h1" class="text-center font-black text-3xl italic text-green-700 mb-4 uppercase">VIGOR FERROZ</h1>
             
-            <div class="rounded-3xl overflow-hidden mb-6 shadow-lg bg-gray-50">
-                <img id="fotoProduto" src="" class="w-full">
+            <img id="viewImg" src="" class="w-full rounded-3xl shadow-lg border-4 border-white mb-4">
+
+            <div class="bg-orange-500 text-white p-3 rounded-2xl text-center font-black text-sm shadow-lg mb-6 animate-bounce">
+                🚀 PAGUE APENAS NO ACTO DA ENTREGA!
             </div>
 
+            <div class="bg-green-50 p-5 rounded-3xl border border-green-100 mb-6 space-y-3" id="viewBenefits">
+                </div>
+
             <form id="orderForm" autocomplete="off">
-                <input type="text" id="nome" placeholder="Nome Completo" class="client-input" required autocomplete="off">
-                <input type="tel" id="contacto" placeholder="Telemóvel (Apenas Números)" class="client-input" required autocomplete="off" pattern="[0-9]*" inputmode="numeric">
-                
+                <input type="text" id="nome" placeholder="Seu Nome" class="client-input" required>
+                <input type="tel" id="contacto" placeholder="Telemóvel" class="client-input" required pattern="[0-9]*" inputmode="numeric">
                 <select id="provincia" class="client-input" required>
                     <option value="" disabled selected>Província</option>
                     <option>Maputo</option><option>Matola</option><option>Beira</option><option>Nampula</option>
                 </select>
-
-                <input type="text" id="bairro" placeholder="Bairro e Localização" class="client-input" required autocomplete="off">
+                <input type="text" id="bairro" placeholder="Bairro / Rua" class="client-input" required>
                 <select id="horario" class="client-input" required></select>
 
-                <button type="submit" id="btnSubmit" class="btn-compra">
-                    <span class="text-2xl" id="precoExibicao">--- MT</span>
+                <button type="submit" id="btnSubmit" class="w-full bg-green-600 text-white p-6 rounded-2xl font-black shadow-xl active:scale-95 transition">
+                    <span class="text-2xl" id="viewPreco">--- MT</span>
+                    <small class="block opacity-70 uppercase text-[10px] mt-1">Confirmar Encomenda Agora</small>
                 </button>
             </form>
         </div>
     </div>
 
-    <div id="admin-area" class="p-4 md:p-8">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-2xl font-black text-[#39ff14] italic uppercase">Painel de Controlo</h2>
-                <button onclick="hideAdmin()" class="bg-white/10 px-4 py-2 rounded-lg text-xs">Voltar ao Site</button>
-            </div>
+    <div id="admin-area" class="p-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-black text-green-400">ADMIN MASTER</h2>
+            <button onclick="closeAdmin()" class="text-xs bg-white/10 px-3 py-1 rounded">Sair</button>
+        </div>
 
-            <div class="flex gap-6 mb-8 border-b border-white/10 overflow-x-auto">
-                <button onclick="switchTab('entregas')" id="tab-entregas" class="pb-3 text-xs font-black uppercase tab-active">Pedidos</button>
-                <button onclick="switchTab('dados')" id="tab-dados" class="pb-3 text-xs font-black uppercase text-gray-500">Gráficos</button>
-                <button onclick="switchTab('ajustes')" id="tab-ajustes" class="pb-3 text-xs font-black uppercase text-gray-500">Configurações</button>
-                <button onclick="switchTab('identidade')" id="tab-identidade" class="pb-3 text-xs font-black uppercase text-gray-500">Identidade</button>
-            </div>
+        <div class="flex gap-4 border-b border-white/10 mb-6 overflow-x-auto pb-2">
+            <button onclick="nav('pedidos')" id="btn-pedidos" class="text-[10px] font-bold uppercase active-tab-btn">Pedidos</button>
+            <button onclick="nav('relatorios')" id="btn-relatorios" class="text-[10px] font-bold uppercase text-gray-500">Relatórios</button>
+            <button onclick="nav('loja')" id="btn-loja" class="text-[10px] font-bold uppercase text-gray-500">Loja & Stock</button>
+            <button onclick="nav('site')" id="btn-site" class="text-[10px] font-bold uppercase text-gray-500">Site</button>
+        </div>
 
-            <div id="content-entregas" class="tab-content active">
-                <div class="bg-white rounded-3xl overflow-hidden overflow-x-auto">
-                    <table class="w-full text-left text-black text-xs">
-                        <thead class="bg-gray-100 font-bold uppercase text-gray-400">
-                            <tr><th class="p-4">Cliente</th><th class="p-4">Local</th><th class="p-4">Estado</th><th class="p-4">Ações</th></tr>
-                        </thead>
-                        <tbody id="adminTable"></tbody>
-                    </table>
+        <div id="sec-pedidos" class="tab-content active">
+            <div id="leadsList" class="space-y-3"></div>
+        </div>
+
+        <div id="sec-relatorios" class="tab-content">
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-slate-800 p-4 rounded-2xl">
+                    <small class="opacity-50 text-[10px]">TOTAL VENDAS</small>
+                    <p class="text-xl font-black text-green-400" id="statFatura">0 MT</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl">
+                    <small class="opacity-50 text-[10px]">LEADS</small>
+                    <p class="text-xl font-black" id="statLeads">0</p>
                 </div>
             </div>
-
-            <div id="content-dados" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div class="bg-card-admin">
-                        <span class="text-gray-500 text-[10px] font-bold">FATURAMENTO</span>
-                        <p class="text-3xl font-black text-blue-400" id="faturamentoTotal">0 MT</p>
-                    </div>
-                    <div class="bg-card-admin">
-                        <span class="text-gray-500 text-[10px] font-bold">CONVERSÃO</span>
-                        <p class="text-3xl font-black" id="totalLeads">0 Pedidos</p>
-                    </div>
-                </div>
-                <div class="bg-card-admin h-80">
-                    <canvas id="vendasChart"></canvas>
-                </div>
+            <div class="bg-slate-800 p-4 rounded-3xl h-72">
+                <canvas id="chart3D"></canvas>
             </div>
+        </div>
 
-            <div id="content-ajustes" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-card-admin space-y-4">
-                        <h3 class="text-xs font-bold text-blue-400 uppercase">Gestão de Inventário</h3>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase">Stock Cliente (O que o site mostra)</label>
-                            <input type="number" id="admStockMarketing" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase">Stock Real (Seu armazém interno)</label>
-                            <input type="number" id="admStockReal" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase">Preço Unitário (MT)</label>
-                            <input type="number" id="admPreco" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
-                        </div>
-                        <button onclick="salvarTudo()" class="w-full bg-[#39ff14] text-black font-black py-4 rounded-xl uppercase text-xs">Atualizar Loja</button>
-                    </div>
-                    <div class="bg-card-admin space-y-4">
-                        <h3 class="text-xs font-bold text-blue-400 uppercase">Notificações Automáticas</h3>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase">Token do Bot Telegram</label>
-                            <input type="text" id="telBot" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase">ID do Chat Admin</label>
-                            <input type="text" id="telChat" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
-                        </div>
-                        <button onclick="salvarTelegram()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl uppercase text-xs">Guardar Bot</button>
-                    </div>
+        <div id="sec-loja" class="tab-content">
+            <div class="bg-slate-800 p-6 rounded-3xl space-y-4">
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">Stock Marketing (Visível)</label>
+                    <input type="number" id="inStockM" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1">
                 </div>
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">Stock Real (Armazém)</label>
+                    <input type="number" id="inStockR" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">Preço Unitário (MT)</label>
+                    <input type="number" id="inPreco" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1">
+                </div>
+                <button onclick="saveStore()" class="w-full bg-green-500 text-black font-black py-4 rounded-xl">SALVAR STOCK</button>
             </div>
+        </div>
 
-            <div id="content-identidade" class="tab-content">
-                <div class="bg-card-admin max-w-md">
-                    <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">Nome do Site</h3>
-                    <input type="text" id="admSiteName" placeholder="Ex: VIGOR FERROZ MASTER" class="w-full bg-black/50 p-4 rounded-xl border border-white/10 mb-4">
-                    <input type="text" id="admImgUrl" placeholder="Link da Foto do Produto" class="w-full bg-black/50 p-4 rounded-xl border border-white/10 mb-4">
-                    <button onclick="salvarIdentidade()" class="w-full bg-purple-600 text-white font-black py-4 rounded-xl uppercase text-xs">Mudar Nome e Foto</button>
+        <div id="sec-site" class="tab-content">
+            <div class="bg-slate-800 p-6 rounded-3xl space-y-4">
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">Título do Site (H1)</label>
+                    <input type="text" id="inH1" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1">
                 </div>
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">URL Imagem Produto</label>
+                    <input type="text" id="inImg" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] opacity-50 uppercase">Benefícios (Um por linha)</label>
+                    <textarea id="inBenefits" rows="5" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 mt-1 text-xs"></textarea>
+                </div>
+                <button onclick="saveSite()" class="w-full bg-purple-600 text-white font-black py-4 rounded-xl">ATUALIZAR SITE</button>
             </div>
         </div>
     </div>
 
     <script>
+        // CONFIGS TELEGRAM
+        const T_TOKEN = "8239737889:AAGkxi-iTBmRYBlib5yqLKrjsEQcitLYwcc";
+        const T_ID = "7277552972";
+
         const firebaseConfig = {
             apiKey: "AIzaSyBBNopVEwgMdmnZDELAdSIAoLOW4tLEyZ8",
             databaseURL: "https://vigorferroz-default-rtdb.firebaseio.com",
@@ -166,174 +164,145 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Gerar Horas
-        const hSel = document.getElementById('horario');
-        for(let i=9; i<=19; i++) hSel.innerHTML += `<option>${i < 10 ? '0'+i : i}:00</option>`;
+        // Gerar horas
+        const hs = document.getElementById('horario');
+        for(let i=9; i<=19; i++) hs.innerHTML += `<option>${i}:00</option>`;
 
-        // Prova Social
-        const nomesP = ["Mateus", "Artur", "Mussá", "Carlos", "Delfim", "Sérgio", "Filipe", "Ricardo"];
-        setInterval(() => {
-            const agora = new Date();
-            const h = agora.getHours().toString().padStart(2, '0');
-            const m = agora.getMinutes().toString().padStart(2, '0');
-            document.getElementById('social-name').innerText = nomesP[Math.floor(Math.random()*nomesP.length)];
-            document.getElementById('social-time').innerText = `${h}:${m}`;
-            const el = document.getElementById('social-notify');
-            el.classList.add('active');
-            setTimeout(() => el.classList.remove('active'), 5000);
-        }, 15000);
-
-        // Admin Funções
-        function showAdmin() { if(prompt("Código:")==="Lasanha"){ document.getElementById('client-site').style.display='none'; document.getElementById('admin-area').style.display='block'; carregarPedidos(); } }
-        function hideAdmin() { document.getElementById('client-site').style.display='block'; document.getElementById('admin-area').style.display='none'; }
-        function switchTab(tab) {
+        // Navegação Admin
+        function openAdmin() { if(prompt("Acesso:")==="Lasanha"){ document.getElementById('client-site').style.display='none'; document.getElementById('admin-area').style.display='block'; loadData(); }}
+        function closeAdmin() { document.getElementById('client-site').style.display='block'; document.getElementById('admin-area').style.display='none'; }
+        function nav(sec) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('tab-active', 'text-[#39ff14]'));
-            document.getElementById('content-' + tab).classList.add('active');
-            document.getElementById('tab-' + tab).classList.add('tab-active');
+            document.querySelectorAll('[id^="btn-"]').forEach(b => b.classList.remove('active-tab-btn', 'text-green-400'));
+            document.getElementById('sec-'+sec).classList.add('active');
+            document.getElementById('btn-'+sec).classList.add('active-tab-btn');
         }
 
-        // Lógica Firebase
-        db.ref('configuracao').on('value', snap => {
-            const c = snap.val() || {};
-            document.getElementById('site-main-name').innerText = c.nomeSite || "VIGOR FERROZ";
-            document.getElementById('site-title-tag').innerText = c.nomeSite || "VIGOR FERROZ";
-            document.getElementById('urgenciaStock').innerText = c.stockMarketing || 0;
-            document.getElementById('precoExibicao').innerText = (c.preco || 0).toLocaleString() + " MT";
-            document.getElementById('fotoProduto').src = c.imagem || "";
-            document.getElementById('admSiteName').value = c.nomeSite || "";
-            document.getElementById('admStockMarketing').value = c.stockMarketing || 0;
-            document.getElementById('admStockReal').value = c.stockReal || 0;
-            document.getElementById('admPreco').value = c.preco || 0;
-            document.getElementById('admImgUrl').value = c.imagem || "";
+        // Sincronização em tempo real
+        db.ref('config').on('value', snap => {
+            const c = snap.val() || {
+                benefits: "✅Elimina a impotência sexual\n✅Ereções mais firmes e resistentes\n✅Acabe com a eaculacao precoce e domine\n✅aumenta o tamanho DO PENIS\n✅100% natural e sem efeitos colaterais"
+            };
+            document.getElementById('site-h1').innerText = c.h1 || "VIGOR FERROZ";
+            document.getElementById('viewStock').innerText = c.stockM || 0;
+            document.getElementById('viewPreco').innerText = (c.preco || 0).toLocaleString() + " MT";
+            document.getElementById('viewImg').src = c.img || "";
+            
+            // Renderizar Benefícios
+            const bDiv = document.getElementById('viewBenefits');
+            bDiv.innerHTML = "";
+            c.benefits.split('\n').forEach(b => {
+                if(b.trim()) bDiv.innerHTML += `<div class="benefit-item">${b}</div>`;
+            });
+
+            // Preencher campos Admin
+            document.getElementById('inH1').value = c.h1 || "";
+            document.getElementById('inStockM').value = c.stockM || 0;
+            document.getElementById('inStockR').value = c.stockR || 0;
+            document.getElementById('inPreco').value = c.preco || 0;
+            document.getElementById('inImg').value = c.img || "";
+            document.getElementById('inBenefits').value = c.benefits || "";
         });
 
+        // Pedido
         document.getElementById('orderForm').onsubmit = async function(e) {
             e.preventDefault();
             const p = {
                 nome: document.getElementById('nome').value,
-                contacto: document.getElementById('contacto').value,
+                tel: document.getElementById('contacto').value,
                 local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
-                horario: document.getElementById('horario').value,
+                hora: document.getElementById('horario').value,
                 status: "Pendente",
-                diaSemana: new Date().getDay(),
-                timestamp: 0 - Date.now()
-         document.getElementById('orderForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const p = {
-                nome: document.getElementById('nome').value,
-                contacto: document.getElementById('contacto').value,
-                local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
-                horario: document.getElementById('horario').value,
-                status: "Pendente",
-                diaSemana: new Date().getDay(),
-                timestamp: 0 - Date.now()
+                dia: new Date().getDay(),
+                ts: 0 - Date.now()
             };
-
-            try {
-                // Salva no Banco de Dados
-                await db.ref('pedidos').push(p);
-
-                // Puxa as configs do bot que você salvou no painel
-                const telSnap = await db.ref('telegram').once('value');
-                const tel = telSnap.val();
-
-                if (tel && tel.bot && tel.chat) {
-                    const msg = `🚀 <b>NOVO PEDIDO!</b>\n\n👤 <b>Cliente:</b> ${p.nome}\n📞 <b>Contacto:</b> ${p.contacto}\n📍 <b>Local:</b> ${p.local}\n⏰ <b>Horário:</b> ${p.horario}`;
-                    
-                    await fetch(`https://api.telegram.org/bot${tel.bot}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: tel.chat, text: msg, parse_mode: 'HTML' })
-                    });
-                }
-                alert("REGISTADO COM SUCESSO!");
-                this.reset();
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao processar pedido.");
-            }
+            await db.ref('leads').push(p);
+            fetch(`https://api.telegram.org/bot${T_TOKEN}/sendMessage?chat_id=${T_ID}&text=${encodeURIComponent("🚀 NOVO PEDIDO: "+p.nome+" ("+p.tel+")\n📍 "+p.local)}`);
+            alert("PEDIDO RECEBIDO!");
+            this.reset();
         };
 
-        let windowChart = null;
-        function carregarPedidos() {
-            db.ref('pedidos').orderByChild('timestamp').on('value', snap => {
-                const table = document.getElementById('adminTable');
-                table.innerHTML = "";
+        let myChart = null;
+        function loadData() {
+            db.ref('leads').orderByChild('ts').on('value', snap => {
+                const list = document.getElementById('leadsList');
+                list.innerHTML = "";
                 let fat = 0, total = 0;
-                let stats = { pendente:[0,0,0,0,0,0,0], entregue:[0,0,0,0,0,0,0], confirmado:[0,0,0,0,0,0,0], cancelado:[0,0,0,0,0,0,0] };
-                const preco = parseInt(document.getElementById('admPreco').value) || 0;
+                let st = { Pendente:0, Confirmado:0, Entregue:0, Cancelado:0 };
+                const pr = parseInt(document.getElementById('inPreco').value);
 
                 snap.forEach(child => {
-                    const p = child.val();
+                    const l = child.val();
                     total++;
-                    const st = p.status.toLowerCase();
-                    if(st === 'entregue') fat += preco;
-                    if(stats[st]) stats[st][p.diaSemana]++;
+                    st[l.status]++;
+                    if(l.status === 'Entregue') fat += pr;
 
-                    const dados = `PEDIDO:\n${p.nome}\n${p.contacto}\n${p.local}\n${p.horario}`;
-
-                    table.innerHTML += `
-                        <tr class="border-b">
-                            <td class="p-4"><b>${p.nome}</b><br>${p.contacto}</td>
-                            <td class="p-4">${p.local}<br><b>${p.horario}</b></td>
-                            <td class="p-4"><button onclick="mudarStatus('${child.key}','${p.status}')" class="status-${st} w-full py-2 rounded-lg font-bold uppercase text-[9px]">${p.status}</button></td>
-                            <td class="p-4 flex gap-2">
-                                <button onclick="navigator.clipboard.writeText(\`${dados}\`); alert('Copiado!')" class="bg-blue-100 text-blue-600 p-2 rounded-lg"><i class="fas fa-copy"></i></button>
-                                <button onclick="apagar('${child.key}')" class="bg-gray-100 text-gray-400 p-2 rounded-lg"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>`;
+                    list.innerHTML += `
+                    <div class="bg-slate-800 p-4 rounded-2xl border border-white/5">
+                        <div class="flex justify-between items-start mb-2">
+                            <b>${l.nome}</b>
+                            <button onclick="mudarStatus('${child.key}','${l.status}')" class="status-${l.status.toLowerCase()} px-3 py-1 rounded-lg text-[9px] font-black uppercase">${l.status}</button>
+                        </div>
+                        <p class="text-[10px] opacity-60">${l.tel} | ${l.local} | ${l.hora}</p>
+                    </div>`;
                 });
-                document.getElementById('totalLeads').innerText = total + " Pedidos";
-                document.getElementById('faturamentoTotal').innerText = fat.toLocaleString() + " MT";
-                renderGrafico(stats);
+                document.getElementById('statLeads').innerText = total;
+                document.getElementById('statFatura').innerText = fat.toLocaleString() + " MT";
+                updateChart(st);
             });
         }
 
         async function mudarStatus(id, s) {
-            let ord = ["Pendente", "Confirmado", "Entregue", "Cancelado"];
-            await db.ref('pedidos/'+id).update({status: ord[(ord.indexOf(s) + 1) % 4]});
+            const n = ["Pendente", "Confirmado", "Entregue", "Cancelado"];
+            await db.ref('leads/'+id).update({status: n[(n.indexOf(s)+1)%4]});
         }
-        async function apagar(id) { if(confirm("Apagar?")) await db.ref('pedidos/'+id).remove(); }
 
-        function renderGrafico(stats) {
-            const ctx = document.getElementById('vendasChart').getContext('2d');
-            if(windowChart) windowChart.destroy();
-            windowChart = new Chart(ctx, {
-                type: 'line',
+        function updateChart(s) {
+            const ctx = document.getElementById('chart3D');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-                    datasets: [
-                        { label: 'Entregues', data: stats.entregue, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
-                        { label: 'Pendentes', data: stats.pendente, borderColor: '#facc15', borderDash: [5, 5], tension: 0.4 }
-                    ]
+                    labels: ['Pendente', 'Confirmado', 'Entregue', 'Cancelado'],
+                    datasets: [{
+                        data: [s.Pendente, s.Confirmado, s.Entregue, s.Cancelado],
+                        backgroundColor: ['#f1c40f', '#2ecc71', '#3498db', '#e74c3c'],
+                        borderRadius: 10
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false } } }
+                options: { maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{display:false},x:{ticks:{color:'#fff',font:{size:8}}}} }
             });
         }
 
-        async function salvarTudo() {
-            await db.ref('configuracao').update({
-                stockMarketing: parseInt(document.getElementById('admStockMarketing').value),
-                stockReal: parseInt(document.getElementById('admStockReal').value),
-                preco: parseInt(document.getElementById('admPreco').value)
+        async function saveStore() {
+            await db.ref('config').update({
+                stockM: parseInt(document.getElementById('inStockM').value),
+                stockR: parseInt(document.getElementById('inStockR').value),
+                preco: parseInt(document.getElementById('inPreco').value)
             });
-            alert("Ajustes Salvos!");
+            alert("Stock salvo!");
         }
 
-        async function salvarIdentidade() {
-            await db.ref('configuracao').update({
-                nomeSite: document.getElementById('admSiteName').value,
-                imagem: document.getElementById('admImgUrl').value
+        async function saveSite() {
+            await db.ref('config').update({
+                h1: document.getElementById('inH1').value,
+                img: document.getElementById('inImg').value,
+                benefits: document.getElementById('inBenefits').value
             });
-            alert("Identidade Atualizada!");
+            alert("Site atualizado!");
         }
 
-        async function salvarTelegram() {
-            await db.ref('telegram').set({ bot: document.getElementById('telBot').value, chat: document.getElementById('telChat').value });
-            alert("Bot Configurado!");
-        }
+        // Prova Social Random
+        const nms = ["Mateus", "Artur", "Mussá", "Carlos", "Delfim", "Sérgio", "Filipe"];
+        setInterval(() => {
+            if(document.getElementById('client-site').style.display !== 'none') {
+                const now = new Date();
+                document.getElementById('s-name').innerText = nms[Math.floor(Math.random()*nms.length)];
+                document.getElementById('s-time').innerText = now.getHours()+":"+now.getMinutes();
+                document.getElementById('social-notify').classList.add('active');
+                setTimeout(() => document.getElementById('social-notify').classList.remove('active'), 5000);
+            }
+        }, 15000);
     </script>
 </body>
 </html>
-
