@@ -3,203 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIGOR FERROZ | Ultra Suite AI</title>
+    <title id="site-title-tag">VIGOR FERROZ | Master Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #0b0f12; color: white; scroll-behavior: smooth; font-family: 'Inter', sans-serif; }
-        .neon-text { color: #39ff14; text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
-        .admin-hidden { display: none !important; }
-        .bg-card { background-color: #161b22; }
-        .input-dark { background-color: #0d1117; border: 1px solid #30363d; color: white; }
+        body { background-color: #fff; color: #222; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        #admin-area { display: none; background-color: #020617; color: white; min-height: 100vh; position: relative; z-index: 1000; }
         
-        .status-confirmado { background-color: #22c55e; color: white; }
-        .status-entregue { background-color: #3b82f6; color: white; }
-        .status-pendente { background-color: #eab308; color: black; }
-        .status-cancelado { background-color: #ef4444; color: white; }
-        
-        .tab-active { border-bottom: 3px solid #39ff14; color: #39ff14; font-weight: 900; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .status-pendente { background-color: #facc15 !important; color: #000 !important; }
+        .status-confirmado { background-color: #22c55e !important; color: #fff !important; }
+        .status-entregue { background-color: #3b82f6 !important; color: #fff !important; }
+        .status-cancelado { background-color: #ef4444 !important; color: #fff !important; }
 
-        /* AI Styles */
-        .ai-glow { box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); border: 1px solid rgba(168, 85, 247, 0.5); }
-        .ai-text { color: #a855f7; }
-        .loading-shimmer { background: linear-gradient(90deg, #161b22 25%, #1d232c 50%, #161b22 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        #social-notify {
+            position: fixed; bottom: 20px; left: 20px; background: rgba(0, 0, 0, 0.9); 
+            color: white; padding: 12px 20px; border-radius: 15px; font-size: 12px; 
+            border-left: 4px solid #39ff14; transition: 0.5s; z-index: 9999;
+            transform: translateX(-150%);
+        }
+        #social-notify.active { transform: translateX(0); }
+
+        .client-input { width: 100%; padding: 15px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 12px; font-size: 16px; }
+        .btn-compra { background: #28a745; color: #fff; width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; box-shadow: 0 5px 0 #1e7e34; }
+        .tab-active { border-bottom: 3px solid #39ff14; color: #39ff14; }
+        .bg-card-admin { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 24px; }
     </style>
 </head>
 <body>
-    <!-- INTERFACE CLIENTE -->
-    <div id="client-site">
-        <header class="py-10 text-center border-b border-gray-800 bg-black/30 sticky top-0 z-50 backdrop-blur-sm">
-            <h1 class="text-5xl font-black neon-text uppercase tracking-tighter italic">VIGOR FERROZ</h1>
-            <p class="text-gray-400 mt-2 font-medium">Potência Máxima em Moçambique</p>
-        </header>
 
-        <main class="max-w-4xl mx-auto p-4 py-8">
-            <div class="text-center mb-8">
-                <img id="fotoProduto" src="https://via.placeholder.com/400?text=Vigor+Ferroz" class="mx-auto rounded-[2rem] border-2 border-[#39ff14]/30 shadow-2xl max-w-[300px]">
-            </div>
-
-            <section class="bg-card p-8 rounded-[2.5rem] border border-gray-800 shadow-2xl mb-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-black text-[#39ff14] uppercase italic">Encomendar Agora</h2>
-                    <p class="text-red-500 font-bold animate-pulse text-xs mt-2 uppercase">⚠️ STOCK LIMITADO: <span id="urgenciaStock">--</span> UNIDADES!</p>
-                </div>
-                
-                <form id="orderForm" autocomplete="off" class="grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
-                    <input type="text" id="nome" placeholder="Nome Completo" class="w-full p-4 input-dark rounded-2xl outline-none" required>
-                    <input type="number" id="contacto" placeholder="Telemóvel" class="w-full p-4 input-dark rounded-2xl outline-none" required>
-                    <select id="provincia" class="w-full p-4 input-dark rounded-2xl outline-none" required>
-                        <option value="">Província...</option>
-                        <option>Maputo Cidade</option><option>Maputo Província</option><option>Gaza</option>
-                        <option>Inhambane</option><option>Sofala</option><option>Manica</option>
-                        <option>Tete</option><option>Zambézia</option><option>Nampula</option>
-                        <option>Niassa</option><option>Cabo Delgado</option>
-                    </select>
-                    <input type="text" id="bairro" placeholder="Bairro" class="w-full p-4 input-dark rounded-2xl outline-none" required>
-                    
-                    <div class="md:col-span-2">
-                        <select id="horario" class="w-full p-4 input-dark rounded-2xl outline-none" required>
-                            <option value="">Período de Entrega...</option>
-                            <option>Manhã (08h - 12h)</option>
-                            <option>Tarde (12h - 17h)</option>
-                        </select>
-                    </div>
-
-                    <div class="md:col-span-2 text-center pt-6">
-                        <div class="text-6xl font-black neon-text mb-4 italic tracking-tighter"><span id="precoExibicao">---</span><span class="text-2xl ml-1">MT</span></div>
-                        <button type="submit" id="btnSubmit" class="w-full bg-[#39ff14] text-black font-extrabold py-6 rounded-3xl text-2xl uppercase hover:brightness-110 active:scale-95 transition-all shadow-[0_10px_30px_rgba(57,255,20,0.3)]">
-                            Finalizar Pedido
-                        </button>
-                    </div>
-                </form>
-            </section>
-        </main>
-        
-        <footer class="text-center p-12 border-t border-gray-900">
-            <button onclick="showAdmin()" class="text-gray-900 hover:text-[#39ff14] text-[10px] font-bold uppercase transition">Admin Panel</button>
-        </footer>
+    <div id="social-notify">
+        <b id="social-name">António</b>
+        <div class="text-[10px] opacity-70">Encomendeu às <span id="social-time">--:--</span></div>
     </div>
 
-    <!-- ÁREA ADMINISTRATIVA -->
-    <div id="admin-area" class="admin-hidden p-4 md:p-8 min-h-screen bg-[#020617]">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-black text-[#39ff14] uppercase italic tracking-tighter">Gestão Master</h2>
-                    <div id="visitor-alert" class="hidden items-center gap-2 text-[10px] text-white bg-blue-600 px-3 py-1 rounded-full mt-2 font-bold animate-pulse uppercase">
-                        <i class="fas fa-signal"></i> Visitante no Site
-                    </div>
-                </div>
-                <button onclick="hideAdmin()" class="bg-red-600/20 text-red-500 px-6 py-2 rounded-xl font-black text-xs border border-red-600/30 uppercase">Sair</button>
+    <div id="client-site">
+        <div class="bg-[#e60000] text-white text-center py-2 text-[11px] font-bold sticky top-0 z-50">
+            <span onclick="showAdmin()" style="cursor:pointer">⚠️</span> 
+            RESTAM APENAS <span id="urgenciaStock">--</span> UNIDADES
+        </div>
+
+        <div class="max-w-[480px] mx-auto p-5">
+            <h1 id="site-main-name" class="text-center italic font-black text-3xl text-[#28a745] mb-4 uppercase">VIGOR FERROZ</h1>
+            
+            <div class="rounded-3xl overflow-hidden mb-6 shadow-lg bg-gray-50">
+                <img id="fotoProduto" src="" class="w-full">
             </div>
 
-            <!-- Dashboard -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                <div class="bg-card p-6 rounded-[2rem] border border-gray-800">
-                    <label class="text-[10px] uppercase text-gray-500 font-black">Faturamento Bruto (Entregues)</label>
-                    <p class="text-4xl font-black text-blue-400 mt-2 italic" id="totalReceita">0 MT</p>
-                </div>
-                <div class="bg-card p-6 rounded-[2rem] border border-gray-800">
-                    <label class="text-[10px] uppercase text-gray-500 font-black">Performance Semanal (Tudo)</label>
-                    <div class="h-28 mt-2">
-                        <canvas id="vendasChart"></canvas>
-                    </div>
-                </div>
-                <div class="bg-card p-6 rounded-[2rem] border border-gray-800 flex items-center justify-between">
-                    <div>
-                        <label class="text-[10px] uppercase text-gray-500 font-black">Stock Real (Armazém)</label>
-                        <p class="text-4xl font-black text-white mt-2" id="dashStockReal">--</p>
-                    </div>
-                    <i class="fas fa-warehouse text-4xl text-gray-800"></i>
-                </div>
-            </div>
+            <form id="orderForm" autocomplete="off">
+                <input type="text" id="nome" placeholder="Nome Completo" class="client-input" required autocomplete="off">
+                <input type="tel" id="contacto" placeholder="Telemóvel (Apenas Números)" class="client-input" required autocomplete="off" pattern="[0-9]*" inputmode="numeric">
+                
+                <select id="provincia" class="client-input" required>
+                    <option value="" disabled selected>Província</option>
+                    <option>Maputo</option><option>Matola</option><option>Beira</option><option>Nampula</option>
+                </select>
 
-            <!-- AI Insight Section -->
-            <div class="mb-8">
-                <button onclick="gerarRelatorioAI()" id="aiReportBtn" class="flex items-center gap-2 bg-purple-600/20 text-purple-400 border border-purple-500/30 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-purple-600/30 transition-all">
-                    <i class="fas fa-magic"></i> Analista de Vendas ✨
+                <input type="text" id="bairro" placeholder="Bairro e Localização" class="client-input" required autocomplete="off">
+                <select id="horario" class="client-input" required></select>
+
+                <button type="submit" id="btnSubmit" class="btn-compra">
+                    <span class="text-2xl" id="precoExibicao">--- MT</span>
                 </button>
-                <div id="aiResponseContainer" class="hidden mt-4 p-6 bg-purple-950/20 border border-purple-500/20 rounded-[2rem] text-xs leading-relaxed text-purple-100 italic">
-                    <div id="aiResponseText"></div>
-                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-area" class="p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-2xl font-black text-[#39ff14] italic uppercase">Painel de Controlo</h2>
+                <button onclick="hideAdmin()" class="bg-white/10 px-4 py-2 rounded-lg text-xs">Voltar ao Site</button>
             </div>
 
-            <!-- Navegação -->
-            <div class="flex gap-8 mb-6 border-b border-gray-800 px-2">
-                <button onclick="switchTab('entregas')" id="tab-entregas" class="pb-3 text-xs uppercase font-black transition tab-active">Pedidos & Logística</button>
-                <button onclick="switchTab('stock')" id="tab-stock" class="pb-3 text-xs uppercase font-black transition text-gray-500">Stock & Telegram</button>
+            <div class="flex gap-6 mb-8 border-b border-white/10 overflow-x-auto">
+                <button onclick="switchTab('entregas')" id="tab-entregas" class="pb-3 text-xs font-black uppercase tab-active">Pedidos</button>
+                <button onclick="switchTab('dados')" id="tab-dados" class="pb-3 text-xs font-black uppercase text-gray-500">Gráficos</button>
+                <button onclick="switchTab('ajustes')" id="tab-ajustes" class="pb-3 text-xs font-black uppercase text-gray-500">Configurações</button>
+                <button onclick="switchTab('identidade')" id="tab-identidade" class="pb-3 text-xs font-black uppercase text-gray-500">Identidade</button>
             </div>
 
-            <!-- ABA ENTREGAS -->
             <div id="content-entregas" class="tab-content active">
-                <div class="bg-white rounded-[2rem] overflow-hidden shadow-2xl overflow-x-auto">
-                    <table class="w-full text-left min-w-[1000px]">
-                        <thead class="bg-gray-100 border-b border-gray-200">
-                            <tr class="text-[10px] font-black uppercase text-gray-400 italic">
-                                <th class="p-5">Cliente</th>
-                                <th class="p-5">Local / Hora</th>
-                                <th class="p-5">Fase do Pedido</th>
-                                <th class="p-5">Notas / Justificativa</th>
-                                <th class="p-5 text-center">Ações</th>
-                            </tr>
+                <div class="bg-white rounded-3xl overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left text-black text-xs">
+                        <thead class="bg-gray-100 font-bold uppercase text-gray-400">
+                            <tr><th class="p-4">Cliente</th><th class="p-4">Local</th><th class="p-4">Estado</th><th class="p-4">Ações</th></tr>
                         </thead>
-                        <tbody id="adminTable" class="text-sm text-black font-medium"></tbody>
+                        <tbody id="adminTable"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- ABA STOCK & TELEGRAM -->
-            <div id="content-stock" class="tab-content">
+            <div id="content-dados" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-card-admin">
+                        <span class="text-gray-500 text-[10px] font-bold">FATURAMENTO</span>
+                        <p class="text-3xl font-black text-blue-400" id="faturamentoTotal">0 MT</p>
+                    </div>
+                    <div class="bg-card-admin">
+                        <span class="text-gray-500 text-[10px] font-bold">CONVERSÃO</span>
+                        <p class="text-3xl font-black" id="totalLeads">0 Pedidos</p>
+                    </div>
+                </div>
+                <div class="bg-card-admin h-80">
+                    <canvas id="vendasChart"></canvas>
+                </div>
+            </div>
+
+            <div id="content-ajustes" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-card p-8 rounded-[2rem] border border-gray-800">
-                        <h3 class="text-xl font-black text-[#39ff14] mb-6 uppercase">Gestão Independente de Stocks</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] uppercase text-gray-400 font-bold ml-1">Stock de Marketing (O que o cliente vê)</label>
-                                <input type="number" id="admStockMarketing" class="w-full p-4 input-dark rounded-2xl outline-none mt-1">
-                            </div>
-                            <div>
-                                <label class="text-[9px] uppercase text-gray-400 font-bold ml-1">Stock Real (Controlo de Armazém)</label>
-                                <input type="number" id="admStockReal" class="w-full p-4 input-dark rounded-2xl outline-none mt-1">
-                            </div>
-                            <div>
-                                <label class="text-[9px] uppercase text-gray-400 font-bold ml-1">Preço do Produto (MT)</label>
-                                <input type="number" id="admPreco" class="w-full p-4 input-dark rounded-2xl outline-none mt-1">
-                            </div>
-                            <input type="text" id="admImg" placeholder="Link da Imagem" class="w-full p-4 input-dark rounded-2xl outline-none">
-                            <button onclick="salvarTudo()" class="w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase shadow-lg mb-4">Salvar Configurações</button>
-                            
-                            <!-- AI Marketing Helper -->
-                            <div class="pt-4 border-t border-gray-800">
-                                <button onclick="gerarCopyMarketing()" id="aiCopyBtn" class="w-full bg-purple-600/20 text-purple-400 border border-purple-500/30 py-4 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-purple-600/30 transition-all">
-                                    <i class="fas fa-bullhorn"></i> Gerar Promoção Criativa ✨
-                                </button>
-                                <div id="aiCopyResponse" class="hidden mt-3 p-4 bg-purple-950/30 rounded-xl text-[11px] text-purple-200 border border-purple-500/20"></div>
-                            </div>
+                    <div class="bg-card-admin space-y-4">
+                        <h3 class="text-xs font-bold text-blue-400 uppercase">Gestão de Inventário</h3>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase">Stock Cliente (O que o site mostra)</label>
+                            <input type="number" id="admStockMarketing" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
                         </div>
-                    </div>
-                    
-                    <div class="bg-card p-8 rounded-[2rem] border border-gray-800">
-                        <h3 class="text-xl font-black text-blue-400 mb-6 uppercase">Alertas Telegram</h3>
-                        <div class="space-y-4">
-                            <input type="text" id="telBot" placeholder="Token do Bot" class="w-full p-4 input-dark rounded-2xl outline-none text-xs">
-                            <input type="text" id="telChat" placeholder="ID do seu Chat" class="w-full p-4 input-dark rounded-2xl outline-none text-xs">
-                            <button onclick="salvarTelegram()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl uppercase text-xs">Salvar Configuração Telegram</button>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase">Stock Real (Seu armazém interno)</label>
+                            <input type="number" id="admStockReal" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
                         </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase">Preço Unitário (MT)</label>
+                            <input type="number" id="admPreco" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
+                        </div>
+                        <button onclick="salvarTudo()" class="w-full bg-[#39ff14] text-black font-black py-4 rounded-xl uppercase text-xs">Atualizar Loja</button>
                     </div>
+                    <div class="bg-card-admin space-y-4">
+                        <h3 class="text-xs font-bold text-blue-400 uppercase">Notificações Automáticas</h3>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase">Token do Bot Telegram</label>
+                            <input type="text" id="telBot" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase">ID do Chat Admin</label>
+                            <input type="text" id="telChat" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mt-1">
+                        </div>
+                        <button onclick="salvarTelegram()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl uppercase text-xs">Guardar Bot</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-identidade" class="tab-content">
+                <div class="bg-card-admin max-w-md">
+                    <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">Nome do Site</h3>
+                    <input type="text" id="admSiteName" placeholder="Ex: VIGOR FERROZ MASTER" class="w-full bg-black/50 p-4 rounded-xl border border-white/10 mb-4">
+                    <input type="text" id="admImgUrl" placeholder="Link da Foto do Produto" class="w-full bg-black/50 p-4 rounded-xl border border-white/10 mb-4">
+                    <button onclick="salvarIdentidade()" class="w-full bg-purple-600 text-white font-black py-4 rounded-xl uppercase text-xs">Mudar Nome e Foto</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; // API Key provided by environment
         const firebaseConfig = {
             apiKey: "AIzaSyBBNopVEwgMdmnZDELAdSIAoLOW4tLEyZ8",
             databaseURL: "https://vigorferroz-default-rtdb.firebaseio.com",
@@ -209,238 +166,26 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // GEMINI API UTILS
-        async function callGemini(prompt, systemPrompt = "") {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] }
-            };
+        // Gerar Horas
+        const hSel = document.getElementById('horario');
+        for(let i=9; i<=19; i++) hSel.innerHTML += `<option>${i < 10 ? '0'+i : i}:00</option>`;
 
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro ao processar IA.";
-                } catch (e) {
-                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
-                }
-            }
-            return "Falha na conexão com a IA após várias tentativas.";
-        }
+        // Prova Social
+        const nomesP = ["Mateus", "Artur", "Mussá", "Carlos", "Delfim", "Sérgio", "Filipe", "Ricardo"];
+        setInterval(() => {
+            const agora = new Date();
+            const h = agora.getHours().toString().padStart(2, '0');
+            const m = agora.getMinutes().toString().padStart(2, '0');
+            document.getElementById('social-name').innerText = nomesP[Math.floor(Math.random()*nomesP.length)];
+            document.getElementById('social-time').innerText = `${h}:${m}`;
+            const el = document.getElementById('social-notify');
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 5000);
+        }, 15000);
 
-        // AI FEATURE: SALES ANALYST
-        async function gerarRelatorioAI() {
-            const btn = document.getElementById('aiReportBtn');
-            const container = document.getElementById('aiResponseContainer');
-            const textEl = document.getElementById('aiResponseText');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando Dados...';
-            container.classList.remove('hidden');
-            textEl.innerHTML = '<div class="h-4 w-3/4 loading-shimmer rounded mb-2"></div><div class="h-4 w-1/2 loading-shimmer rounded"></div>';
-
-            const snapshot = await db.ref('pedidos').once('value');
-            const pedidos = [];
-            snapshot.forEach(c => pedidos.push(c.val()));
-
-            const prompt = `Analise estes dados de pedidos do meu negócio "Vigor Ferroz": ${JSON.stringify(pedidos)}. 
-            Forneça um relatório ultra-curto (máximo 3 frases) em português de Moçambique com um tom motivador e estratégico. 
-            Destaque qual província está a comprar mais e dê uma dica de negócio.`;
-
-            const res = await callGemini(prompt, "Aja como um analista de negócios experiente focado no mercado de Moçambique.");
-            textEl.innerText = res;
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic"></i> Analista de Vendas ✨';
-        }
-
-        // AI FEATURE: MARKETING HELPER
-        async function gerarCopyMarketing() {
-            const btn = document.getElementById('aiCopyBtn');
-            const responseEl = document.getElementById('aiCopyResponse');
-            const stock = document.getElementById('admStockReal').value;
-            const preco = document.getElementById('admPreco').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando Copy...';
-            
-            const prompt = `Crie uma mensagem curta de marketing para WhatsApp para vender o "Vigor Ferroz". 
-            Preço: ${preco} MT. Stock real disponível: ${stock} unidades. 
-            Use um tom persuasivo moçambicano, inclua emojis e foque na urgência.`;
-
-            const res = await callGemini(prompt, "És um copywriter especialista em vendas diretas em Moçambique.");
-            responseEl.innerText = res;
-            responseEl.classList.remove('hidden');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-bullhorn"></i> Gerar Promoção Criativa ✨';
-        }
-
-        // TELEGRAM
-        let telegramConfig = { bot: "", chat: "" };
-        db.ref('telegram').on('value', snap => { if(snap.val()) telegramConfig = snap.val(); });
-
-        async function notifyTelegram(msg) {
-            if(!telegramConfig.bot || !telegramConfig.chat) return;
-            const url = `https://api.telegram.org/bot${telegramConfig.bot}/sendMessage?chat_id=${telegramConfig.chat}&text=${encodeURIComponent(msg)}`;
-            try { fetch(url); } catch(e) {}
-        }
-
-        async function salvarTelegram() {
-            const b = document.getElementById('telBot').value;
-            const c = document.getElementById('telChat').value;
-            await db.ref('telegram').set({ bot: b, chat: c });
-            alert("Telegram configurado!");
-        }
-
-        // VISITAS
-        db.ref('visitas_activas/count').on('value', snap => {
-            const count = snap.val() || 0;
-            const alertBox = document.getElementById('visitor-alert');
-            if(count > 0) alertBox.classList.remove('hidden');
-            else alertBox.classList.add('hidden');
-        });
-        const visitorRef = db.ref('visitas_activas/count');
-        visitorRef.transaction(c => (c || 0) + 1);
-        window.addEventListener('beforeunload', () => visitorRef.transaction(c => (c > 0 ? c - 1 : 0)));
-
-        // CONFIG & STOCK
-        db.ref('configuracao').on('value', snap => {
-            const c = snap.val() || {};
-            document.getElementById('urgenciaStock').innerText = c.stockMarketing || 0;
-            document.getElementById('dashStockReal').innerText = c.stockReal || 0;
-            document.getElementById('precoExibicao').innerText = (c.preco || 0).toLocaleString();
-            document.getElementById('fotoProduto').src = c.imagem || "https://via.placeholder.com/400";
-
-            if(!document.activeElement.id.startsWith('adm')) {
-                document.getElementById('admStockMarketing').value = c.stockMarketing || 0;
-                document.getElementById('admStockReal').value = c.stockReal || 0;
-                document.getElementById('admPreco').value = c.preco || 0;
-                document.getElementById('admImg').value = c.imagem || "";
-            }
-        });
-
-        async function salvarTudo() {
-            const sm = document.getElementById('admStockMarketing').value;
-            const sr = document.getElementById('admStockReal').value;
-            const p = document.getElementById('admPreco').value;
-            const i = document.getElementById('admImg').value;
-            await db.ref('configuracao').update({ 
-                stockMarketing: parseInt(sm), 
-                stockReal: parseInt(sr), 
-                preco: parseInt(p), 
-                imagem: i 
-            });
-            alert("✅ Stocks e Preço Atualizados!");
-        }
-
-        // PEDIDOS
-        document.getElementById('orderForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
-            btn.disabled = true;
-
-            const pedido = {
-                nome: document.getElementById('nome').value,
-                contacto: document.getElementById('contacto').value,
-                local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
-                horario: document.getElementById('horario').value,
-                status: "Pendente",
-                justificativa: "",
-                diaSemana: new Date().getDay(),
-                timestamp: 0 - Date.now()
-            };
-
-            try {
-                await db.ref('pedidos').push(pedido);
-                await db.ref('configuracao/stockReal').transaction(c => (c || 0) - 1);
-                notifyTelegram(`🔥 NOVO PEDIDO!\nCliente: ${pedido.nome}\nContacto: ${pedido.contacto}\nLocal: ${pedido.local}`);
-                alert("RECEBIDO! Aguarde o nosso contacto.");
-                this.reset();
-            } catch (err) {}
-            btn.disabled = false;
-        };
-
-        // GESTÃO ADMIN
-        let windowChart = null;
-        function carregarPedidos() {
-            db.ref('pedidos').orderByChild('timestamp').on('value', snapshot => {
-                const table = document.getElementById('adminTable');
-                table.innerHTML = "";
-                let faturamento = 0;
-                let stats = { pendente: [0,0,0,0,0,0,0], confirmado: [0,0,0,0,0,0,0], entregue: [0,0,0,0,0,0,0], cancelado: [0,0,0,0,0,0,0] };
-
-                const precoBase = parseInt(document.getElementById('admPreco').value) || 0;
-
-                snapshot.forEach(child => {
-                    const p = child.val();
-                    const id = child.key;
-                    const dia = p.diaSemana;
-                    const st = p.status.toLowerCase();
-
-                    if(stats[st]) stats[st][dia]++;
-                    if(p.status === "Entregue") faturamento += precoBase;
-
-                    let sClass = "status-" + st;
-                    const copyText = `${p.nome} - ${p.contacto} - ${p.local}`;
-
-                    table.innerHTML += `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="p-5"><b>${p.nome}</b><br><span class="text-blue-600">${p.contacto}</span></td>
-                            <td class="p-5 text-xs text-gray-500">${p.local}<br><b>${p.horario}</b></td>
-                            <td class="p-5">
-                                <button onclick="mudarStatus('${id}','${p.status}')" class="${sClass} w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm">
-                                    ${p.status}
-                                </button>
-                            </td>
-                            <td class="p-5">
-                                <input type="text" onchange="salvarJust('${id}', this.value)" value="${p.justificativa || ''}" 
-                                    class="w-full bg-transparent border-b border-gray-100 text-[10px] outline-none" placeholder="...">
-                            </td>
-                            <td class="p-5 text-center flex gap-3 justify-center">
-                                <button onclick="navigator.clipboard.writeText('${copyText}'); alert('Copiado!')" class="text-gray-300 hover:text-blue-500"><i class="fas fa-copy"></i></button>
-                                <button onclick="apagar('${id}')" class="text-gray-200 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>`;
-                });
-                document.getElementById('totalReceita').innerText = faturamento.toLocaleString() + " MT";
-                renderizarGrafico(stats);
-            });
-        }
-
-        function renderizarGrafico(stats) {
-            const ctx = document.getElementById('vendasChart').getContext('2d');
-            if(windowChart) windowChart.destroy();
-            windowChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
-                    datasets: [
-                        { label: 'Entregue', data: stats.entregue, backgroundColor: '#3b82f6' },
-                        { label: 'Caminho', data: stats.confirmado, backgroundColor: '#22c55e' },
-                        { label: 'Novo', data: stats.pendente, backgroundColor: '#eab308' },
-                        { label: 'Canc', data: stats.cancelado, backgroundColor: '#ef4444' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { stacked: true, grid: { display: false }, ticks: { size: 9, color: '#666' } }, y: { stacked: true, display: false } }
-                }
-            });
-        }
-
-        async function mudarStatus(id, s) {
-            let ord = ["Pendente", "Confirmado", "Entregue", "Cancelado"];
-            let next = ord[(ord.indexOf(s) + 1) % 4];
-            await db.ref('pedidos/'+id).update({status: next});
-        }
-        async function salvarJust(id, v) { await db.ref('pedidos/'+id).update({justificativa: v}); }
-        async function apagar(id) { if(confirm("Apagar?")) await db.ref('pedidos/'+id).remove(); }
-
+        // Admin Funções
+        function showAdmin() { if(prompt("Código:")==="Lasanha"){ document.getElementById('client-site').style.display='none'; document.getElementById('admin-area').style.display='block'; carregarPedidos(); } }
+        function hideAdmin() { document.getElementById('client-site').style.display='block'; document.getElementById('admin-area').style.display='none'; }
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('tab-active', 'text-[#39ff14]'));
@@ -448,16 +193,114 @@
             document.getElementById('tab-' + tab).classList.add('tab-active');
         }
 
-        function showAdmin() {
-            if(prompt("Chave Master:") === "Lasanha") {
-                document.getElementById('client-site').classList.add('admin-hidden');
-                document.getElementById('admin-area').classList.remove('admin-hidden');
-                carregarPedidos();
-            }
+        // Lógica Firebase
+        db.ref('configuracao').on('value', snap => {
+            const c = snap.val() || {};
+            document.getElementById('site-main-name').innerText = c.nomeSite || "VIGOR FERROZ";
+            document.getElementById('site-title-tag').innerText = c.nomeSite || "VIGOR FERROZ";
+            document.getElementById('urgenciaStock').innerText = c.stockMarketing || 0;
+            document.getElementById('precoExibicao').innerText = (c.preco || 0).toLocaleString() + " MT";
+            document.getElementById('fotoProduto').src = c.imagem || "";
+            document.getElementById('admSiteName').value = c.nomeSite || "";
+            document.getElementById('admStockMarketing').value = c.stockMarketing || 0;
+            document.getElementById('admStockReal').value = c.stockReal || 0;
+            document.getElementById('admPreco').value = c.preco || 0;
+            document.getElementById('admImgUrl').value = c.imagem || "";
+        });
+
+        document.getElementById('orderForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const p = {
+                nome: document.getElementById('nome').value,
+                contacto: document.getElementById('contacto').value,
+                local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
+                horario: document.getElementById('horario').value,
+                status: "Pendente",
+                diaSemana: new Date().getDay(),
+                timestamp: 0 - Date.now()
+            };
+            await db.ref('pedidos').push(p);
+            alert("REGISTADO COM SUCESSO!");
+            this.reset();
+        };
+
+        let windowChart = null;
+        function carregarPedidos() {
+            db.ref('pedidos').orderByChild('timestamp').on('value', snap => {
+                const table = document.getElementById('adminTable');
+                table.innerHTML = "";
+                let fat = 0, total = 0;
+                let stats = { pendente:[0,0,0,0,0,0,0], entregue:[0,0,0,0,0,0,0], confirmado:[0,0,0,0,0,0,0], cancelado:[0,0,0,0,0,0,0] };
+                const preco = parseInt(document.getElementById('admPreco').value) || 0;
+
+                snap.forEach(child => {
+                    const p = child.val();
+                    total++;
+                    const st = p.status.toLowerCase();
+                    if(st === 'entregue') fat += preco;
+                    if(stats[st]) stats[st][p.diaSemana]++;
+
+                    const dados = `PEDIDO:\n${p.nome}\n${p.contacto}\n${p.local}\n${p.horario}`;
+
+                    table.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-4"><b>${p.nome}</b><br>${p.contacto}</td>
+                            <td class="p-4">${p.local}<br><b>${p.horario}</b></td>
+                            <td class="p-4"><button onclick="mudarStatus('${child.key}','${p.status}')" class="status-${st} w-full py-2 rounded-lg font-bold uppercase text-[9px]">${p.status}</button></td>
+                            <td class="p-4 flex gap-2">
+                                <button onclick="navigator.clipboard.writeText(\`${dados}\`); alert('Copiado!')" class="bg-blue-100 text-blue-600 p-2 rounded-lg"><i class="fas fa-copy"></i></button>
+                                <button onclick="apagar('${child.key}')" class="bg-gray-100 text-gray-400 p-2 rounded-lg"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+                document.getElementById('totalLeads').innerText = total + " Pedidos";
+                document.getElementById('faturamentoTotal').innerText = fat.toLocaleString() + " MT";
+                renderGrafico(stats);
+            });
         }
-        function hideAdmin() {
-            document.getElementById('client-site').classList.remove('admin-hidden');
-            document.getElementById('admin-area').classList.add('admin-hidden');
+
+        async function mudarStatus(id, s) {
+            let ord = ["Pendente", "Confirmado", "Entregue", "Cancelado"];
+            await db.ref('pedidos/'+id).update({status: ord[(ord.indexOf(s) + 1) % 4]});
+        }
+        async function apagar(id) { if(confirm("Apagar?")) await db.ref('pedidos/'+id).remove(); }
+
+        function renderGrafico(stats) {
+            const ctx = document.getElementById('vendasChart').getContext('2d');
+            if(windowChart) windowChart.destroy();
+            windowChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+                    datasets: [
+                        { label: 'Entregues', data: stats.entregue, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'Pendentes', data: stats.pendente, borderColor: '#facc15', borderDash: [5, 5], tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false } } }
+            });
+        }
+
+        async function salvarTudo() {
+            await db.ref('configuracao').update({
+                stockMarketing: parseInt(document.getElementById('admStockMarketing').value),
+                stockReal: parseInt(document.getElementById('admStockReal').value),
+                preco: parseInt(document.getElementById('admPreco').value)
+            });
+            alert("Ajustes Salvos!");
+        }
+
+        async function salvarIdentidade() {
+            await db.ref('configuracao').update({
+                nomeSite: document.getElementById('admSiteName').value,
+                imagem: document.getElementById('admImgUrl').value
+            });
+            alert("Identidade Atualizada!");
+        }
+
+        async function salvarTelegram() {
+            await db.ref('telegram').set({ bot: document.getElementById('telBot').value, chat: document.getElementById('telChat').value });
+            alert("Bot Configurado!");
         }
     </script>
 </body>
