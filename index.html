@@ -218,10 +218,41 @@
                 status: "Pendente",
                 diaSemana: new Date().getDay(),
                 timestamp: 0 - Date.now()
+         document.getElementById('orderForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const p = {
+                nome: document.getElementById('nome').value,
+                contacto: document.getElementById('contacto').value,
+                local: `${document.getElementById('bairro').value}, ${document.getElementById('provincia').value}`,
+                horario: document.getElementById('horario').value,
+                status: "Pendente",
+                diaSemana: new Date().getDay(),
+                timestamp: 0 - Date.now()
             };
-            await db.ref('pedidos').push(p);
-            alert("REGISTADO COM SUCESSO!");
-            this.reset();
+
+            try {
+                // Salva no Banco de Dados
+                await db.ref('pedidos').push(p);
+
+                // Puxa as configs do bot que você salvou no painel
+                const telSnap = await db.ref('telegram').once('value');
+                const tel = telSnap.val();
+
+                if (tel && tel.bot && tel.chat) {
+                    const msg = `🚀 <b>NOVO PEDIDO!</b>\n\n👤 <b>Cliente:</b> ${p.nome}\n📞 <b>Contacto:</b> ${p.contacto}\n📍 <b>Local:</b> ${p.local}\n⏰ <b>Horário:</b> ${p.horario}`;
+                    
+                    await fetch(`https://api.telegram.org/bot${tel.bot}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: tel.chat, text: msg, parse_mode: 'HTML' })
+                    });
+                }
+                alert("REGISTADO COM SUCESSO!");
+                this.reset();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao processar pedido.");
+            }
         };
 
         let windowChart = null;
@@ -305,3 +336,4 @@
     </script>
 </body>
 </html>
+
